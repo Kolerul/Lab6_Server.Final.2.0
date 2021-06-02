@@ -1,9 +1,10 @@
+import java.io.Serializable;
 import java.time.LocalDate;
 
 /**
  * Класс, объекты которого являются основным элементоми коллекции.
  */
-public class City {
+public class City implements Serializable {
     /**
      * Поле ID ( у каждого элемента оно должно быть уникально)
      */
@@ -63,6 +64,40 @@ public class City {
         }
         this.government = government;
         this.governer = new Human(governerName);
+        creationDate = LocalDate.now();
+    }
+
+    public City(String name, Float x, Float y, Integer area, int population, float metersAboveSeaLevel,
+                Integer timezone, int capital, Government government, String governerName){
+        this.name = name;
+        this.coordinates = new Coordinates(x, y);
+        this.area = area;
+        this.population = population;
+        this.metersAboveSeaLevel = metersAboveSeaLevel;
+        this.timezone = timezone;
+        if (capital == -1){
+            this.capital = null;
+        }else if (capital == 0){
+            this.capital = false;
+        }else if (capital == 1){
+            this.capital = true;
+        }
+        this.government = government;
+        this.governer = new Human(governerName);
+        creationDate = LocalDate.now();
+    }
+
+    public City(long id, City city){
+        this.id = id;
+        this.name = city.name;
+        this.coordinates = city.coordinates;
+        this.area = city.area;
+        this.population = city.population;
+        this.metersAboveSeaLevel = city.metersAboveSeaLevel;
+        this.timezone = city.timezone;
+        this.capital = city.getCapital();
+        this.government = city.government;
+        this.governer = city.getGoverner();
         creationDate = LocalDate.now();
     }
 
@@ -126,5 +161,3 @@ public class City {
                 ", Дата создания: " + creationDate;
     }
 }
-
-

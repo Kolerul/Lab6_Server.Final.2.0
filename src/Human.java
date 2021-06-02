@@ -1,9 +1,10 @@
+import java.io.Serializable;
 import java.time.ZonedDateTime;
 
 /**
  * Класс, объекты которого являются правителями
  */
-public class Human {
+public class Human implements Serializable {
     /**
      * Поле имя человека
      */

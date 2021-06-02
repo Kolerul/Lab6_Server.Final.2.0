@@ -15,14 +15,16 @@ public class Server{
     private Socket clientSocket;
     private ServerSocket serverSocket;
     private int port;
-    private Command input;
+    private Commands input;
     private WorkingWithMainStack presenter;
     private Reporting report;
     static Logger LOGGER;
+    private City city;
+    private int limit = 10000;
 
 
     public Server() throws IOException {
-        port = 4444;
+        port = 4445;
         LogManager.getLogManager().readConfiguration();
         LOGGER = Logger.getLogger(Server.class.getName());
         try {
@@ -86,31 +88,27 @@ public class Server{
                 do {
                     inputStream = new ObjectInputStream(new BufferedInputStream(clientSocket.getInputStream()));
                     LOGGER.info("Создан канал входа");
-                    input = (Command) inputStream.readObject();
-                    //System.out.println("inputStream создан");
+                    input = (Commands) inputStream.readObject();
+                    report = input.execute(presenter);
                     outputStream = new ObjectOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
                     LOGGER.info("Создан канал выхода");
-                    //System.out.println("outputStream создан");
-
-                    //System.out.println(input.toString());
-                    LOGGER.info("Получена команда от клиента");
-
-                    commandProcess(input);
-
-                    //System.out.println(report.toString());
-
+                    byte[] bytes = serialize(report);
+                    Integer length = bytes.length;
+                    LOGGER.info("Количество байт: " + length);
+                    String sstrl = length.toString();
+                    outputStream.writeObject(sstrl);
+                    outputStream.flush();
+                    inputStream = new ObjectInputStream(new BufferedInputStream(clientSocket.getInputStream()));
+                    input = (Commands) inputStream.readObject();
+                    LOGGER.info("подготовка к отправке ответа прошла успешно");
+                    outputStream = new ObjectOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
                     outputStream.writeObject(report);
                     outputStream.flush();
                     LOGGER.info("Отправлен ответ клиенту");
-                    //System.out.println("Все норм");
                 } while (true);
             } finally {
                 clientSocket.close();
             }
-       /* }catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            LOGGER.warning("Непредвиденная ошибка, программа закрывается");
-            System.exit(-1);*/
         } catch (SocketException | EOFException e){
             //System.out.println(input.toString());
             try{
@@ -130,42 +128,17 @@ public class Server{
 
     }
 
-    private void commandProcess(Command command){
-        LOGGER.info("Начата обработка команды от клиента");
-        if (command.number == 0){
-            report = presenter.createNewMainStack(command.name);
-        }else if (command.number == 1){
-            report = presenter.showHelp();
-       }else if (command.number == 2){
-            report = presenter.showInfo();
-        }else if (command.number == 3){
-            report = presenter.showMainStack();
-        }else if (command.number == 4){
-            report = presenter.addElement(command.name, command.x, command.y, command.area, command.population, command.metersAboveSeaLevel,
-                    command.timezone, command.capital, command.government, command.governorName);
-        }else if (command.number == 5){
-            report = presenter.updateElementById(command.id, command.name, command.x, command.y, command.area, command.population, command.metersAboveSeaLevel,
-                    command.timezone, command.capital, command.government, command.governorName);
-        }else if (command.number == 6){
-            report = presenter.removeElementById(command.id);
-        }else if (command.number == 7){
-            report = presenter.clearStack();
-        }else if (command.number == 8){
-            //presenter.executeScript(command.name, presenter);
-        }else if (command.number == 10){
-            report = presenter.removeFirst();
-        }else if (command.number == 11){
-            report = presenter.addIfMax(command.name, command.x, command.y, command.area, command.population, command.metersAboveSeaLevel,
-                    command.timezone, command.capital, command.government, command.governorName);
-        }else if (command.number == 12){
-            report = presenter.showHistory();
-        }else if (command.number == 13){
-            report = presenter.idGrouper();
-        }else if (command.number == 14){
-            report = presenter.searchByName(command.name);
-        }else if (command.number == 15){
-            report = presenter.showCapitalStack();
+    public byte[] serialize(Object obj) {
+        //System.out.println("Внутри сереализатора");
+        try {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+            objectOutputStream.writeObject(obj);
+            return byteArrayOutputStream.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        return null;
     }
 
 }

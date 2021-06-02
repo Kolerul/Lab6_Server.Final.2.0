@@ -2,13 +2,13 @@ import java.io.*;
 
 
 public class Main {
-    public static void main(String[] arg){
-        try{
+    public static void main(String[] arg) {
+        try {
             Server server = new Server();
-            do{
+            do {
                 server.doServerBuisness();
-            }while (true);
-        }catch (ClassNotFoundException | IOException e){
+            } while (true);
+        } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();
             System.exit(-1);
         }

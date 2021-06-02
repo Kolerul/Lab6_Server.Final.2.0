@@ -1,7 +1,9 @@
+import java.io.Serializable;
+
 /**
  * Класс объекты, которого являются координатами
  */
-public class Coordinates{
+public class Coordinates implements Serializable {
     /**
      * Поле координата по оси x
      */
